@@ -48,6 +48,21 @@ class Yarns_MicroSub_Plugin {
 	public static $version = '1.1.0';
 
 	/**
+	 * Whether a compatible IndieAuth plugin is active.
+	 *
+	 * Older releases of the IndieAuth plugin exposed a global
+	 * `IndieAuth_Plugin` class. As of IndieAuth 4.x the plugin was
+	 * rewritten under the `IndieAuth` namespace and no longer defines
+	 * that class, so both are checked here to stay compatible with
+	 * old and new IndieAuth versions.
+	 *
+	 * @return bool
+	 */
+	public static function indieauth_active() {
+		return class_exists( 'IndieAuth_Plugin' ) || class_exists( '\IndieAuth\IndieAuth' );
+	}
+
+	/**
 	 * Run when plugins are loaded.
 	 */
 	public static function plugins_loaded() {
@@ -116,7 +131,7 @@ class Yarns_MicroSub_Plugin {
 	 */
 	public static function init() {
 
-		if ( ! class_exists( 'IndieAuth_Plugin' ) ) {
+		if ( ! self::indieauth_active() ) {
 			add_action( 'admin_notices', array( __CLASS__, 'indieauth_not_installed_notice' ) );
 			return;
 		}
@@ -209,7 +224,7 @@ class Yarns_MicroSub_Plugin {
 	 * @return string
 	 */
 	public static function indieauth_plugin_notice() {
-		if ( ! class_exists( 'IndieAuth_Plugin' ) ) {
+		if ( ! self::indieauth_active() ) {
 			$class   = 'notice notice-error';
 			$message = __( '<b>Yarns Microsub Server notice:</b> WordPress IndieAuth Plugin is not active. Yarns Microsub Server requires this plugin to authorize microsub clients.', 'yarns-microsub-server' );
 			printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), $message );
