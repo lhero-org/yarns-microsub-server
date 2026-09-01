@@ -175,7 +175,7 @@ class DOMTreeBuilder implements EventHandler
             // documents, and attempting to up-convert any older DTDs to HTML5.
             $dt = $impl->createDocumentType('html');
             // $this->doc = \DOMImplementation::createDocument(NULL, 'html', $dt);
-            $this->doc = $impl->createDocument(null, null, $dt);
+            $this->doc = $impl->createDocument(null, '', $dt);
             $this->doc->encoding = !empty($options['encoding']) ? $options['encoding'] : 'UTF-8';
         }
 
@@ -410,11 +410,11 @@ class DOMTreeBuilder implements EventHandler
                 $prefix = ($pos = strpos($aName, ':')) ? substr($aName, 0, $pos) : false;
 
                 if ('xmlns' === $prefix) {
-                    $ele->setAttributeNS(self::NAMESPACE_XMLNS, $aName, $aVal);
+                    $ele->setAttributeNS(self::NAMESPACE_XMLNS, $aName, (string) $aVal);
                 } elseif (false !== $prefix && isset($this->nsStack[0][$prefix])) {
-                    $ele->setAttributeNS($this->nsStack[0][$prefix], $aName, $aVal);
+                    $ele->setAttributeNS($this->nsStack[0][$prefix], $aName, (string) $aVal);
                 } else {
-                    $ele->setAttribute($aName, $aVal);
+                    $ele->setAttribute($aName, (string) $aVal);
                 }
             } catch (\DOMException $e) {
                 $this->parseError("Illegal attribute name for tag $name. Ignoring: $aName");
