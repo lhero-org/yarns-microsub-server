@@ -17,14 +17,46 @@ class Yarns_Microsub_Aggregator {
 		// If a post has multiple permalinks, check each of them.
 		if ( is_array( $permalink ) ) {
 			foreach ( $permalink as $single_url ) {
-				if ( get_page_by_title( $channel . '|' . $single_url, OBJECT, 'yarns_microsub_post' ) ) {
+				if ( self::find_post_by_title( $channel . '|' . $single_url, 'yarns_microsub_post' ) ) {
 					return true;
 				}
 			}
 		}
-		if ( get_page_by_title( $channel . '|' . $permalink, OBJECT, 'yarns_microsub_post' ) ) {
+		if ( self::find_post_by_title( $channel . '|' . $permalink, 'yarns_microsub_post' ) ) {
 			return true;
 		}
+	}
+
+	/**
+	 * Find a single post by exact title match within a post type.
+	 *
+	 * Replacement for the deprecated get_page_by_title() (removed as of WP 6.2).
+	 * Uses the same WP_Query 'title' argument that WordPress core's own
+	 * get_page_by_title() back-compat shim uses internally, so behaviour is
+	 * unchanged - only the deprecated wrapper is avoided.
+	 *
+	 * @param string $title     Exact post title to match.
+	 * @param string $post_type Post type to search within.
+	 *
+	 * @return WP_Post|null
+	 */
+	private static function find_post_by_title( $title, $post_type ) {
+		$query = new WP_Query(
+			array(
+				'post_type'           => $post_type,
+				'title'               => $title,
+				'post_status'         => 'all',
+				'posts_per_page'      => 1,
+				'no_found_rows'       => true,
+				'ignore_sticky_posts' => true,
+			)
+		);
+
+		if ( $query->have_posts() ) {
+			return $query->posts[0];
+		}
+
+		return null;
 	}
 
 	/**
